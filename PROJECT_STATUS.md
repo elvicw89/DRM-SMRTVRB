@@ -2,7 +2,7 @@
 
 - **Product:** DRM-SMRTVRB
 - **Company:** yeahwaah audio
-- **Version:** 0.1.0 (Windows VST3 pre-release published: https://github.com/elvicw/DRM-SMRTVRB/releases/tag/v0.1.0)
+- **Version:** 0.1.0 (Windows VST3 release published (promoted from pre-release 2026-11-24): https://github.com/elvicw/DRM-SMRTVRB/releases/tag/v0.1.0)
 - **Phase:** 7 — Testing, optimization, and release preparation
 - **Completed:** Standalone engines/profiles/SPACE; Free/Host/Tap timing calculations; five synthetic fixtures; optional advanced overrides; eight factory presets; portable versioned state codec; JUCE 8.0.6 VST3 and standalone wrapper; full Windows REAPER 7.42 host acceptance (exact dry endpoint, wet SPACE response, host tempo synchronization, automation envelopes, all eight factory programs, state/project save/reopen, UI rendering and resize down to 640 x 420).
 - **Active tasks:** Phase 7 close-out complete (see Phase 7 exit review below). Next phase to be chosen by the owner.
@@ -27,7 +27,7 @@
 | Licensing | AGPLv3 adopted; repository public | `LICENSE` |
 | Release packaging | Versioned zip + SHA-256 + `LICENSE` + `SOURCE.txt`; tag/version check exercised | runs 45225739734, 45225737575 |
 
-Not verified (carried forward): in-DAW CPU, other hosts (Cubase, Ableton, FL Studio, Bitwig, Studio One, etc.), macOS/Linux release packaging, signed/notarized builds, extended listening beyond one pass, installer, and an actual published release. `v0.1.0` was tagged and published as a Windows-only, unsigned GitHub pre-release (build run 45233325683, zip SHA-256 `bc5bf4d7…0a3d` verified, contains `LICENSE` and `SOURCE.txt`). macOS and Linux are deferred by owner decision; a trial Linux build failed linking because `drmsmrtvrb_dsp` is a non-PIC static library linked into the shared VST3 (fix: `POSITION_INDEPENDENT_CODE ON`), while a universal macOS build passed in CI (PR #9, closed unmerged).
+Not verified (carried forward): in-DAW CPU, other hosts (Cubase, Ableton, FL Studio, Bitwig, Studio One, etc.), macOS/Linux release packaging, signed/notarized builds, extended listening beyond one pass, installer, and an actual published release. `v0.1.0` was tagged and published as a Windows-only, unsigned GitHub release (initially pre-release, promoted to a normal release by owner decision) (build run 45233325683, zip SHA-256 `bc5bf4d7…0a3d` verified, contains `LICENSE` and `SOURCE.txt`). macOS and Linux are deferred by owner decision; a trial Linux build failed linking because `drmsmrtvrb_dsp` is a non-PIC static library linked into the shared VST3 (fix: `POSITION_INDEPENDENT_CODE ON`), while a universal macOS build passed in CI (PR #9, closed unmerged).
 
 ## Environment observations
 

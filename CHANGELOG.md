@@ -1,12 +1,12 @@
 # Changelog
 
-## Unreleased — vintage UI redesign
+## 0.2.0 — vintage UI redesign
 
 - Editor-only redesign per `UI_DESIGN_MAKEOVER.md`: rotary knobs, labelled ON/OFF pill switches (Pre-delay, Tone, Width, Tail), recessed SOURCE/SPACE/OUTPUT/ADVANCED panels, custom look-and-feel. The Mix ON switch is gone; moving the Mix knob sets `advMixOn`, double-click restores Mix 100% and clears `advMixOn`. A preset with Mix off shows 100% while the sound follows the SPACE macro. DSP, parameter IDs/ranges/defaults, presets and state are unchanged. Verified by build, 8/8 CTest and standalone screenshots only; no DAW host check of the new UI yet.
 
-## 0.1.0 — Windows VST3 pre-release
+## 0.1.0 — Windows VST3 release
 
-- Published v0.1.0 as a GitHub pre-release (Windows x64 VST3, unsigned, AGPLv3, source link bundled). macOS/Linux deferred.
+- Published v0.1.0 as a GitHub release, promoted from pre-release (Windows x64 VST3, unsigned, AGPLv3, source link bundled). macOS/Linux deferred.
 
 ## Unreleased — Phase 7 close-out
 
