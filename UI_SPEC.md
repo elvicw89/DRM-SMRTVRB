@@ -2,6 +2,9 @@
 
 ## Status
 
+> Redesign in progress (branch `feature/vintage-ui-redesign`): the layout below predates `UI_DESIGN_MAKEOVER.md`; the redesign uses rotary knobs, ON/OFF pill switches and no Mix enable switch. See CHANGELOG.
+
+
 Phase 6 design with an initial JUCE editor implementation in `Source/PluginEditor.*`. The editor binds to actual APVTS parameters. JUCE 8.0.6 is selected for implementation; distribution license terms remain to be resolved before release.
 
 ## Main window
