@@ -83,7 +83,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout DRMsmrtvrbAudioProcessor::cr
     p.emplace_back(floatParameter("advMix", "Advanced Mix", 0.0f, 1.0f, 1.0f, "%", 0, 100.0f));
     p.push_back(boolParameter("advTailOn", "Advanced Tail Enabled"));
     p.emplace_back(floatParameter("advTail", "Advanced Tail", 0.08f, 8.0f, 1.2f, "s", 2));
-    p.emplace_back(floatParameter("outGain", "Output Level", -24.0f, 12.0f, 0.0f, "dB", 1));
+    p.emplace_back(floatParameter("outGain", "Output Level", -24.0f, 18.0f, 0.0f, "dB", 1));
     return { p.begin(), p.end() };
 }
 

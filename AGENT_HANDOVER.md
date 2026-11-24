@@ -2,6 +2,8 @@
 
 ## Output level fader (Claude Sonnet 5.5)
 
+Branch `feature/output-gain-headroom` (agent: Claude Sonnet 5.5): `outGain` range raised from -24..+12 dB to -24..+18 dB at the owner's request (fader works in REAPER per owner; it just needed more level). Edited processor range, fader tick marks and docs; 8/8 CTest on macOS. Release was cancelled (nothing tagged or published); PR #17 (CI builds only on merge) is open and separate. Release 0.3.0 still pending owner go-ahead. The AGENTS.md token check has no accessible API here and was not performed.
+
 Branch `feature/output-gain-fader`: new `outGain` parameter (-24..+12 dB, default 0) plus a bottom fader strip in the editor; docs updated. macOS build + 8/8 CTest + standalone screenshot done; Windows package built via dispatch for owner testing. Not done: DAW check of the fader, release/version bump (owner decision). Continue on this branch; do not create a new one. Note: the AGENTS.md token/usage check has no accessible API in this environment and was not performed.
 
 ## Vintage UI redesign (Claude Sonnet 5.5)

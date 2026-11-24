@@ -188,7 +188,7 @@ void DRMLookAndFeel::drawLinearSlider(juce::Graphics& g, int x, int y, int width
     g.fillRoundedRectangle(slot, 3.0f);
 
     const double range = slider.getMaximum() - slider.getMinimum();
-    for (double mark : { -24.0, -12.0, 0.0, 6.0, 12.0 })
+    for (double mark : { -24.0, -12.0, 0.0, 6.0, 12.0, 18.0 })
     {
         const float tx = left + static_cast<float>((mark - slider.getMinimum()) / range) * (right - left);
         g.setColour((mark == 0.0 ? ivory : muted).withAlpha(0.7f * alpha));
