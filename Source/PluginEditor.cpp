@@ -346,6 +346,9 @@ DRMsmrtvrbAudioProcessorEditor::DRMsmrtvrbAudioProcessorEditor(DRMsmrtvrbAudioPr
     comboAttachments[2] = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(state, "sync", sync);
     comboAttachments[3] = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(state, "division", division);
     sliderAttachments[0] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(state, "space", space);
+    // Display-only: show SPACE as a whole percentage; the parameter value keeps full precision.
+    space.textFromValueFunction = [](double value) { return juce::String(juce::roundToInt(value)); };
+    space.updateText();
     sliderAttachments[1] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(state, "bpm", bpm);
     sliderAttachments[2] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(state, "freeDecay", freeDecay);
     sliderAttachments[3] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(state, "advPreDelay", preDelay);

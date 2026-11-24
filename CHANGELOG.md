@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased — SPACE readout
+
+- SPACE value box now shows whole percent (display only; parameter precision unchanged).
+
 ## Unreleased — SSL-reference UI pass
 
 - Editor-only: brushed-metal faceplate, header plate, inset panels, machined-metal knob caps with bezel, illuminated amber push buttons (PRE-DELAY/TONE/WIDTH/TAIL, with ON/OFF caption), MODIFIED status lamp. Replaced the orange focus box with a soft knob glow on hover/drag/keyboard focus. Matched against `docs/references/ui_reference.png`; differences: no segmented meter texture, simpler title treatment. DSP/parameters/presets/state unchanged. Verified by macOS build, 8/8 CTest and standalone screenshots (`screenshots/ui-ssl-*.png`); no DAW check.
