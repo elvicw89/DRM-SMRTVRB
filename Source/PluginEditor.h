@@ -6,12 +6,6 @@
 class DRMFocusableSlider : public juce::Slider
 {
 public:
-    void paintOverChildren(juce::Graphics& graphics) override
-    {
-        if (!hasKeyboardFocus(true)) return;
-        graphics.setColour(findColour(juce::Slider::rotarySliderFillColourId));
-        graphics.drawRoundedRectangle(getLocalBounds().toFloat().reduced(1.5f), 4.0f, 2.0f);
-    }
 };
 
 // Mix has no enable switch in the UI. The existing advMixOn parameter is engaged when the
@@ -86,6 +80,7 @@ private:
     void styleSlider(juce::Slider& slider, bool rotary);
     void addLabel(juce::Label& label, const juce::String& text);
     void selectPreset();
+    void renderBackdrop();
 
     DRMsmrtvrbAudioProcessor& pluginProcessor;
     DRMLookAndFeel lookAndFeel;
@@ -100,7 +95,9 @@ private:
     std::array<std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>, 7> sliderAttachments;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> tailAttachment;
     std::array<std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment>, 4> buttonAttachments;
-    juce::Rectangle<int> sourcePanel, spacePanel, outputPanel, advancedPanel, meterBox, envelopeBox;
+    juce::Rectangle<int> headerPlate, statusBox, sourcePanel, spacePanel, outputPanel, advancedPanel, meterBox, envelopeBox;
+    juce::Image backdrop;
+    bool presetModified = false;
     std::array<float, 4> meterLevels {};
     std::array<float, 4> meterPeakMarkers {};
     std::array<int, 4> meterPeakHoldTicks {};

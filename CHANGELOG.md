@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased — SSL-reference UI pass
+
+- Editor-only: brushed-metal faceplate, header plate, inset panels, machined-metal knob caps with bezel, illuminated amber push buttons (PRE-DELAY/TONE/WIDTH/TAIL, with ON/OFF caption), MODIFIED status lamp. Replaced the orange focus box with a soft knob glow on hover/drag/keyboard focus. Matched against `docs/references/ui_reference.png`; differences: no segmented meter texture, simpler title treatment. DSP/parameters/presets/state unchanged. Verified by macOS build, 8/8 CTest and standalone screenshots (`screenshots/ui-ssl-*.png`); no DAW check.
+
 ## 0.2.0 — vintage UI redesign
 
 - Editor-only redesign per `UI_DESIGN_MAKEOVER.md`: rotary knobs, labelled ON/OFF pill switches (Pre-delay, Tone, Width, Tail), recessed SOURCE/SPACE/OUTPUT/ADVANCED panels, custom look-and-feel. The Mix ON switch is gone; moving the Mix knob sets `advMixOn`, double-click restores Mix 100% and clears `advMixOn`. A preset with Mix off shows 100% while the sound follows the SPACE macro. DSP, parameter IDs/ranges/defaults, presets and state are unchanged. Verified by build, 8/8 CTest and standalone screenshots only; no DAW host check of the new UI yet.

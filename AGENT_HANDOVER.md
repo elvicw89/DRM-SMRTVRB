@@ -4,6 +4,10 @@
 
 Branch `feature/vintage-ui-redesign`. Only `Source/PluginEditor.{h,cpp}` changed (plus docs/screenshots). macOS build + 8/8 CTest + standalone screenshots (`screenshots/ui-makeover-*.png`) done. Not done: Windows CI result, REAPER check of the new UI, tag/release (ask owner; a new version is needed). Mix knob engages `advMixOn` on user change (see CHANGELOG).
 
+## SSL-reference UI pass (Claude Sonnet 5.5)
+
+Branch `feature/ui-ssl-reference-pass`; only `Source/PluginEditor.{h,cpp}` plus docs/screenshots. Not released/tagged. Not done: DAW check of the new look.
+
 ## v0.1.0 promoted (2026-11-24, Claude Sonnet 5.5)
 
 - Owner approved promoting v0.1.0 from pre-release to a normal (latest) release; notes/title updated accordingly. 1.0.0 should wait for at least one more DAW and ideally signing.

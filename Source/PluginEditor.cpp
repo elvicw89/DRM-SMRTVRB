@@ -7,7 +7,7 @@ const juce::Colour panel { 0xff25282b };
 const juce::Colour recessed { 0xff131517 };
 const juce::Colour border { 0xff464b4f };
 const juce::Colour ivory { 0xffe8e1ca };
-const juce::Colour muted { 0xff9f9a8c };
+const juce::Colour muted { 0xffaaa595 };
 const juce::Colour amber { 0xffe0a040 };
 const juce::Colour inactive { 0xff6d7173 };
 const juce::Colour meterInput { 0xff71836b };
@@ -17,32 +17,59 @@ juce::Font plain(float size, bool bold = false)
     return juce::Font(juce::FontOptions(size, bold ? juce::Font::bold : juce::Font::plain));
 }
 
-void drawCaption(juce::Graphics& g, juce::Rectangle<int> area, const juce::String& text)
+// Deterministic horizontal brushed-metal grain.
+void drawBrushed(juce::Graphics& g, juce::Rectangle<float> area, juce::Colour top, juce::Colour bottom, float grain)
 {
-    g.setColour(muted);
-    g.setFont(plain(10.5f, true));
-    g.drawText(text, area.getX() + 10, area.getY() + 5, area.getWidth() - 20, 14, juce::Justification::centredLeft);
-    g.setColour(border.withAlpha(0.7f));
-    g.drawHorizontalLine(area.getY() + 21, static_cast<float>(area.getX() + 10), static_cast<float>(area.getRight() - 10));
+    g.setGradientFill(juce::ColourGradient(top, 0.0f, area.getY(), bottom, 0.0f, area.getBottom(), false));
+    g.fillRect(area);
+    juce::Random random(1234);
+    for (float y = area.getY(); y < area.getBottom(); y += 1.0f)
+    {
+        const float level = random.nextFloat();
+        g.setColour((level > 0.5f ? juce::Colours::white : juce::Colours::black).withAlpha(grain * std::abs(level - 0.5f) * 2.0f));
+        g.drawHorizontalLine(static_cast<int>(y), area.getX(), area.getRight());
+    }
 }
 
-void drawPanel(juce::Graphics& g, juce::Rectangle<int> area, const juce::String& caption)
+void drawBevel(juce::Graphics& g, juce::Rectangle<float> r, float radius, bool raised)
 {
-    const auto r = area.toFloat();
-    g.setColour(recessed);
-    g.fillRoundedRectangle(r, 5.0f);
-    g.setColour(border);
-    g.drawRoundedRectangle(r.reduced(0.5f), 5.0f, 1.0f);
-    drawCaption(g, area, caption);
+    g.setColour((raised ? juce::Colours::white : juce::Colours::black).withAlpha(0.22f));
+    g.drawRoundedRectangle(r.reduced(0.5f), radius, 1.0f);
+    g.setColour((raised ? juce::Colours::black : juce::Colours::white).withAlpha(0.35f));
+    g.drawRoundedRectangle(r.reduced(1.5f), radius, 1.0f);
+}
+
+void drawCaption(juce::Graphics& g, juce::Rectangle<int> area, const juce::String& text)
+{
+    g.setColour(ivory.withAlpha(0.9f));
+    g.setFont(plain(11.0f, true));
+    g.drawText(text, area.getX() + 12, area.getY() + 5, area.getWidth() - 24, 14, juce::Justification::centredLeft);
+    g.setColour(border.withAlpha(0.8f));
+    g.drawHorizontalLine(area.getY() + 21, static_cast<float>(area.getX() + 12), static_cast<float>(area.getRight() - 12));
 }
 
 void drawScrew(juce::Graphics& g, float x, float y)
 {
-    g.setColour(juce::Colour(0xff0d0e0f));
-    g.fillEllipse(x - 4.0f, y - 4.0f, 8.0f, 8.0f);
-    g.setColour(border);
-    g.drawEllipse(x - 4.0f, y - 4.0f, 8.0f, 8.0f, 1.0f);
-    g.drawLine(x - 2.5f, y + 1.5f, x + 2.5f, y - 1.5f, 1.0f);
+    g.setGradientFill(juce::ColourGradient(juce::Colour(0xff6a6e70), x - 4.0f, y - 4.0f,
+                                           juce::Colour(0xff17191a), x + 4.0f, y + 4.0f, false));
+    g.fillEllipse(x - 5.0f, y - 5.0f, 10.0f, 10.0f);
+    g.setColour(juce::Colours::black.withAlpha(0.7f));
+    g.drawEllipse(x - 5.0f, y - 5.0f, 10.0f, 10.0f, 1.0f);
+    g.setColour(juce::Colour(0xff0c0d0e));
+    g.drawLine(x - 3.0f, y + 1.8f, x + 3.0f, y - 1.8f, 1.6f);
+}
+
+// Dark inset panel set into the metal plate, with metal rim, caption and corner screws.
+void drawPanel(juce::Graphics& g, juce::Rectangle<int> area, const juce::String& caption)
+{
+    const auto r = area.toFloat();
+    g.setColour(juce::Colours::black.withAlpha(0.55f));
+    g.fillRoundedRectangle(r.expanded(2.0f), 6.0f);
+    drawBrushed(g, r.reduced(1.0f), juce::Colour(0xff202224), juce::Colour(0xff141516), 0.06f);
+    g.setColour(juce::Colour(0xff7a7f82).withAlpha(0.8f));
+    g.drawRoundedRectangle(r.expanded(1.0f), 6.0f, 1.2f);
+    drawBevel(g, r, 5.0f, false);
+    drawCaption(g, area, caption);
 }
 }
 
@@ -81,9 +108,21 @@ void DRMLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int width
     const float tickOuter = diameter * 0.5f;
     const float ringRadius = tickOuter - juce::jmax(4.0f, diameter * 0.075f);
     const float angle = startAngle + sliderPos * (endAngle - startAngle);
+    const bool active = enabled && (slider.isMouseOverOrDragging() || slider.hasKeyboardFocus(true));
+
+    // Soft amber glow marks hover, drag and keyboard focus instead of a focus box.
+    if (active)
+    {
+        for (int i = 4; i >= 1; --i)
+        {
+            const float r = tickOuter + static_cast<float>(i) * 1.6f;
+            g.setColour(amber.withAlpha(0.07f * static_cast<float>(5 - i)));
+            g.fillEllipse(centre.x - r, centre.y - r, r * 2.0f, r * 2.0f);
+        }
+    }
 
     // Scale ticks every 10% of travel.
-    g.setColour(muted.withAlpha(0.55f * alpha));
+    g.setColour(ivory.withAlpha(0.6f * alpha));
     for (int i = 0; i <= 10; ++i)
     {
         const float a = startAngle + (endAngle - startAngle) * static_cast<float>(i) / 10.0f;
@@ -93,31 +132,44 @@ void DRMLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int width
                    i % 5 == 0 ? 1.6f : 1.0f);
     }
 
-    const float stroke = juce::jmax(2.5f, diameter * 0.04f);
+    // Black bezel with the amber value arc.
+    const float stroke = juce::jmax(2.5f, diameter * 0.045f);
+    g.setColour(juce::Colour(0xff0a0b0c));
+    g.fillEllipse(centre.x - ringRadius - stroke, centre.y - ringRadius - stroke,
+                  (ringRadius + stroke) * 2.0f, (ringRadius + stroke) * 2.0f);
     juce::Path track;
     track.addCentredArc(centre.x, centre.y, ringRadius, ringRadius, 0.0f, startAngle, endAngle, true);
-    g.setColour(juce::Colour(0xff34383b).withAlpha(alpha));
+    g.setColour(juce::Colour(0xff2f3336).withAlpha(alpha));
     g.strokePath(track, juce::PathStrokeType(stroke, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
     juce::Path value;
     value.addCentredArc(centre.x, centre.y, ringRadius, ringRadius, 0.0f, startAngle, angle, true);
     g.setColour((enabled ? amber : inactive).withAlpha(alpha));
     g.strokePath(value, juce::PathStrokeType(stroke, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
 
-    const float capRadius = ringRadius - stroke - 3.0f;
-    juce::ColourGradient cap(juce::Colour(0xff565b5f), centre.x - capRadius * 0.5f, centre.y - capRadius * 0.7f,
-                             juce::Colour(0xff1f2123), centre.x + capRadius * 0.6f, centre.y + capRadius * 0.8f, false);
-    g.setGradientFill(cap);
+    // Brushed-metal cap with concentric machining rings.
+    const float capRadius = ringRadius - stroke - 2.0f;
+    g.setGradientFill(juce::ColourGradient(juce::Colour(0xffc9ccce), centre.x - capRadius * 0.6f, centre.y - capRadius * 0.8f,
+                                           juce::Colour(0xff3d4245), centre.x + capRadius * 0.7f, centre.y + capRadius * 0.9f, false));
+    g.setOpacity(alpha);
     g.fillEllipse(centre.x - capRadius, centre.y - capRadius, capRadius * 2.0f, capRadius * 2.0f);
+    for (float r = 2.0f; r < capRadius; r += 1.8f)
+    {
+        g.setColour(juce::Colours::black.withAlpha(0.10f + 0.05f * std::sin(r * 2.3f)));
+        g.drawEllipse(centre.x - r, centre.y - r, r * 2.0f, r * 2.0f, 0.7f);
+    }
     g.setColour(juce::Colour(0xff0b0c0d));
     g.drawEllipse(centre.x - capRadius, centre.y - capRadius, capRadius * 2.0f, capRadius * 2.0f, 1.5f);
-    g.setColour(juce::Colour(0xff6b7175).withAlpha(0.5f * alpha));
-    g.drawEllipse(centre.x - capRadius + 2.0f, centre.y - capRadius + 2.0f,
-                  capRadius * 2.0f - 4.0f, capRadius * 2.0f - 4.0f, 1.0f);
+    g.setColour(juce::Colours::white.withAlpha(0.28f * alpha));
+    g.drawEllipse(centre.x - capRadius + 1.5f, centre.y - capRadius + 1.5f,
+                  capRadius * 2.0f - 3.0f, capRadius * 2.0f - 3.0f, 1.0f);
 
     juce::Path pointer;
-    pointer.addRoundedRectangle(-1.4f, -capRadius * 0.88f, 2.8f, capRadius * 0.52f, 1.2f);
+    pointer.addRoundedRectangle(-1.5f, -capRadius * 0.9f, 3.0f, capRadius * 0.5f, 1.2f);
+    const auto transform = juce::AffineTransform::rotation(angle).translated(centre.x, centre.y);
+    g.setColour(juce::Colours::black.withAlpha(0.5f));
+    g.fillPath(pointer, transform.translated(0.8f, 0.8f));
     g.setColour((enabled ? ivory : muted).withAlpha(alpha));
-    g.fillPath(pointer, juce::AffineTransform::rotation(angle).translated(centre.x, centre.y));
+    g.fillPath(pointer, transform);
 }
 
 juce::Label* DRMLookAndFeel::createSliderTextBox(juce::Slider& slider)
@@ -128,41 +180,50 @@ juce::Label* DRMLookAndFeel::createSliderTextBox(juce::Slider& slider)
     return label;
 }
 
+// Illuminated push button: the lit amber face and an ON/OFF caption show the state.
 void DRMLookAndFeel::drawToggleButton(juce::Graphics& g, juce::ToggleButton& button, bool, bool)
 {
     const bool enabled = button.isEnabled();
     const bool on = button.getToggleState();
     const float alpha = enabled ? 1.0f : 0.45f;
     const auto bounds = button.getLocalBounds().toFloat();
-
-    g.setColour((on && enabled ? ivory : muted).withAlpha(alpha));
-    g.setFont(plain(10.5f, true));
-    g.drawText(button.getButtonText().toUpperCase(), bounds.withHeight(14.0f).toNearestInt(), juce::Justification::centred);
-
-    const float w = juce::jmin(52.0f, bounds.getWidth() - 4.0f);
-    const auto track = juce::Rectangle<float>(w, 20.0f).withCentre({ bounds.getCentreX(), bounds.getY() + 14.0f + 4.0f + 10.0f });
-    g.setColour(recessed.withAlpha(alpha));
-    g.fillRoundedRectangle(track, 4.0f);
-    g.setColour((on ? amber : border).withAlpha(alpha));
-    g.drawRoundedRectangle(track.reduced(0.5f), 4.0f, 1.0f);
-
-    const float thumbW = track.getWidth() * 0.46f;
-    const auto thumb = juce::Rectangle<float>(thumbW, track.getHeight() - 6.0f)
-        .withCentre({ on ? track.getRight() - thumbW * 0.5f - 3.0f : track.getX() + thumbW * 0.5f + 3.0f, track.getCentreY() });
-    g.setColour((on ? amber : juce::Colour(0xff4b5053)).withAlpha(alpha));
-    g.fillRoundedRectangle(thumb, 3.0f);
-
-    g.setFont(plain(9.5f, true));
-    g.setColour((on ? amber : muted).withAlpha(alpha));
-    const auto textArea = on ? track.withWidth(track.getWidth() - thumbW - 3.0f)
-                             : track.withTrimmedLeft(thumbW + 3.0f);
-    g.drawText(on ? "ON" : "OFF", textArea.toNearestInt(), juce::Justification::centred);
+    const float w = juce::jmin(bounds.getWidth() - 6.0f, 104.0f);
+    const auto face = juce::Rectangle<float>(w, 26.0f).withCentre({ bounds.getCentreX(), bounds.getY() + 15.0f });
 
     if (button.hasKeyboardFocus(true))
     {
-        g.setColour(amber);
-        g.drawRoundedRectangle(track.expanded(2.0f), 5.0f, 1.5f);
+        g.setColour(amber.withAlpha(0.35f));
+        g.fillRoundedRectangle(face.expanded(5.0f), 7.0f);
     }
+
+    if (on && enabled)
+    {
+        for (int i = 4; i >= 1; --i)
+        {
+            g.setColour(amber.withAlpha(0.06f * static_cast<float>(5 - i)));
+            g.fillRoundedRectangle(face.expanded(static_cast<float>(i) * 1.5f), 5.0f);
+        }
+    }
+    g.setColour(juce::Colour(0xff0a0b0c));
+    g.fillRoundedRectangle(face.expanded(2.0f), 5.0f);
+    const auto inner = face.reduced(1.0f);
+    g.setGradientFill(on ? juce::ColourGradient(juce::Colour(0xffffd884), 0.0f, inner.getY(),
+                                                juce::Colour(0xffc98418), 0.0f, inner.getBottom(), false)
+                         : juce::ColourGradient(juce::Colour(0xff4d5154), 0.0f, inner.getY(),
+                                                juce::Colour(0xff25282a), 0.0f, inner.getBottom(), false));
+    g.setOpacity(alpha);
+    g.fillRoundedRectangle(inner, 4.0f);
+    g.setColour(juce::Colours::white.withAlpha(on ? 0.45f : 0.15f));
+    g.drawHorizontalLine(static_cast<int>(inner.getY()) + 1, inner.getX() + 4.0f, inner.getRight() - 4.0f);
+
+    g.setColour((on ? juce::Colour(0xff2b1c05) : muted).withAlpha(alpha));
+    g.setFont(plain(12.5f, true));
+    g.drawText(button.getButtonText().toUpperCase(), inner.toNearestInt(), juce::Justification::centred);
+
+    g.setColour((on ? amber : muted).withAlpha(alpha));
+    g.setFont(plain(9.5f, true));
+    g.drawText(on ? "ON" : "OFF", juce::Rectangle<float>(bounds.getX(), face.getBottom() + 3.0f, bounds.getWidth(), 11.0f).toNearestInt(),
+               juce::Justification::centred);
 }
 
 void DRMLookAndFeel::drawButtonBackground(juce::Graphics& g, juce::Button& button, const juce::Colour&,
@@ -339,26 +400,66 @@ void DRMsmrtvrbAudioProcessorEditor::addLabel(juce::Label& label, const juce::St
     addAndMakeVisible(label);
 }
 
-void DRMsmrtvrbAudioProcessorEditor::paint(juce::Graphics& g)
+void DRMsmrtvrbAudioProcessorEditor::renderBackdrop()
 {
-    g.fillAll(chassis);
-    const auto area = getLocalBounds().toFloat().reduced(8.0f);
-    g.setColour(panel);
-    g.fillRoundedRectangle(area, 8.0f);
-    g.setColour(border);
-    g.drawRoundedRectangle(area, 8.0f, 1.5f);
-    drawScrew(g, area.getX() + 11.0f, area.getY() + 11.0f);
-    drawScrew(g, area.getRight() - 11.0f, area.getY() + 11.0f);
-    drawScrew(g, area.getX() + 11.0f, area.getBottom() - 11.0f);
-    drawScrew(g, area.getRight() - 11.0f, area.getBottom() - 11.0f);
+    backdrop = juce::Image(juce::Image::ARGB, juce::jmax(1, getWidth()), juce::jmax(1, getHeight()), true);
+    juce::Graphics g(backdrop);
 
-    g.setColour(border.withAlpha(0.8f));
-    g.drawHorizontalLine(sourcePanel.getY() - 6, static_cast<float>(sourcePanel.getX()), static_cast<float>(outputPanel.getRight()));
+    // Outer brushed-steel faceplate with rim and corner screws.
+    const auto full = getLocalBounds().toFloat();
+    drawBrushed(g, full, juce::Colour(0xff5a5e61), juce::Colour(0xff2c2f31), 0.12f);
+    g.setColour(juce::Colours::black.withAlpha(0.8f));
+    g.drawRect(full, 2.0f);
+    drawBevel(g, full.reduced(2.0f), 2.0f, true);
+    for (const auto& pt : { juce::Point<float>(14.0f, 14.0f), juce::Point<float>(full.getRight() - 14.0f, 14.0f),
+                            juce::Point<float>(14.0f, full.getBottom() - 14.0f),
+                            juce::Point<float>(full.getRight() - 14.0f, full.getBottom() - 14.0f) })
+        drawScrew(g, pt.x, pt.y);
+
+    // Dark header plate with title, preset and status dividers.
+    const auto plate = headerPlate.toFloat();
+    drawBrushed(g, plate, juce::Colour(0xff2a2c2e), juce::Colour(0xff151617), 0.07f);
+    g.setColour(juce::Colours::black.withAlpha(0.8f));
+    g.drawRoundedRectangle(plate, 3.0f, 1.5f);
+    drawBevel(g, plate, 3.0f, false);
+    g.setColour(border);
+    const float dividerTop = plate.getY() + 8.0f, dividerBottom = plate.getBottom() - 8.0f;
+    const float presetLeft = static_cast<float>(preset.getX()) - 14.0f;
+    const float statusLeft = static_cast<float>(statusBox.getX()) - 12.0f;
+    g.drawVerticalLine(static_cast<int>(presetLeft), dividerTop, dividerBottom);
+    g.drawVerticalLine(static_cast<int>(statusLeft), dividerTop, dividerBottom);
 
     drawPanel(g, sourcePanel, "SOURCE / TEMPO");
     drawPanel(g, spacePanel, "SPACE");
     drawPanel(g, outputPanel, "OUTPUT");
     drawPanel(g, advancedPanel, "ADVANCED PROFILE TRIMS");
+}
+
+void DRMsmrtvrbAudioProcessorEditor::paint(juce::Graphics& g)
+{
+    if (backdrop.isNull() || backdrop.getWidth() != getWidth() || backdrop.getHeight() != getHeight())
+        renderBackdrop();
+    g.drawImageAt(backdrop, 0, 0);
+
+    // Preset status lamp.
+    {
+        const auto box = statusBox.toFloat();
+        g.setColour(juce::Colours::black);
+        g.fillRoundedRectangle(box.expanded(1.5f), 4.0f);
+        g.setGradientFill(juce::ColourGradient(juce::Colour(0xff3d4043), 0.0f, box.getY(),
+                                               juce::Colour(0xff1d1f21), 0.0f, box.getBottom(), false));
+        g.fillRoundedRectangle(box, 3.0f);
+        g.setColour(presetModified ? amber : border);
+        g.drawRoundedRectangle(box.reduced(0.5f), 3.0f, 1.0f);
+        const float lx = box.getRight() - 14.0f, ly = box.getCentreY();
+        if (presetModified)
+        {
+            g.setColour(amber.withAlpha(0.3f));
+            g.fillEllipse(lx - 8.0f, ly - 8.0f, 16.0f, 16.0f);
+        }
+        g.setColour(presetModified ? juce::Colour(0xffffd884) : juce::Colour(0xff4a4d4f));
+        g.fillEllipse(lx - 4.5f, ly - 4.5f, 9.0f, 9.0f);
+    }
 
     // Meters: input L/R then output L/R.
     constexpr float barWidth = 11.0f, gap = 4.0f, pairGap = 9.0f;
@@ -410,17 +511,20 @@ void DRMsmrtvrbAudioProcessorEditor::resized()
 {
     auto content = getLocalBounds().reduced(24, 20);
 
-    auto header = content.removeFromTop(54);
-    auto presetArea = header.removeFromRight(juce::jmax(220, content.getWidth() / 2));
+    headerPlate = content.removeFromTop(58);
+    auto header = headerPlate.reduced(14, 6);
+    statusBox = header.removeFromRight(juce::jmin(126, header.getWidth() / 4)).withSizeKeepingCentre(juce::jmin(126, header.getWidth() / 4), 30);
+    header.removeFromRight(12);
+    auto presetArea = header.removeFromRight(juce::jmax(200, header.getWidth() * 45 / 100));
+    header.removeFromRight(14);
     title.setBounds(header.removeFromTop(32));
     brand.setBounds(header.removeFromTop(18));
-    auto presetRow = presetArea.removeFromTop(16);
-    presetLabel.setBounds(presetRow.removeFromLeft(presetRow.getWidth() / 2));
-    presetStatus.setBounds(presetRow);
-    presetStatus.setJustificationType(juce::Justification::centredRight);
+    presetLabel.setBounds(presetArea.removeFromTop(16));
+    presetStatus.setBounds(statusBox.withTrimmedRight(24).withTrimmedLeft(4));
+    presetStatus.setJustificationType(juce::Justification::centred);
     preset.setBounds(presetArea.removeFromTop(30).withTrimmedTop(2));
 
-    content.removeFromTop(12);
+    content.removeFromTop(10);
     advancedPanel = content.removeFromBottom(juce::jlimit(132, 190, content.getHeight() * 38 / 100));
     content.removeFromBottom(8);
     sourcePanel = content.removeFromLeft(content.getWidth() * 40 / 100);
@@ -491,7 +595,7 @@ void DRMsmrtvrbAudioProcessorEditor::resized()
         for (std::size_t i = 0; i < 4; ++i)
         {
             auto column = inner.removeFromLeft(cell).reduced(4, 0);
-            toggles[i]->setBounds(column.removeFromTop(38));
+            toggles[i]->setBounds(column.removeFromTop(42));
             knobs[i]->setTextBoxStyle(juce::Slider::TextBoxBelow, false, juce::jmin(72, column.getWidth()), 18);
             knobs[i]->setBounds(column);
         }
@@ -528,6 +632,7 @@ void DRMsmrtvrbAudioProcessorEditor::timerCallback()
     const bool modified = pluginProcessor.isCurrentPresetModified();
     presetStatus.setText(modified ? "MODIFIED" : "FACTORY", juce::dontSendNotification);
     presetStatus.setColour(juce::Label::textColourId, modified ? amber : muted);
+    presetModified = modified;
 
     for (int channel = 0; channel < 2; ++channel)
     {
