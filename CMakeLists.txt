@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(DRM_SMRTVRB VERSION 0.2.1 LANGUAGES C CXX)
+project(DRM_SMRTVRB VERSION 0.3.0 LANGUAGES C CXX)
 
 option(DRMSMRTVRB_BUILD_TESTS "Build DSP validation tests" ON)
 option(DRMSMRTVRB_BUILD_PLUGIN "Build the JUCE VST3 and standalone plugin" ON)

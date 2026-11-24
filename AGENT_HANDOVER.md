@@ -1,5 +1,8 @@
 # Agent Handover
 
+Branch `release/v0.3.0`: version bumped 0.2.1 -> 0.3.0 and changelog retitled for release (output level fader, -24..+18 dB; CI now builds only on merge). After merge: tag `v0.3.0`, wait for `release-package.yml`, publish GitHub Release. Do not create a new branch for follow-ups on this task.
+
+
 ## Output level fader (Claude Sonnet 5.5)
 
 Branch `feature/output-gain-headroom` (agent: Claude Sonnet 5.5): `outGain` range raised from -24..+12 dB to -24..+18 dB at the owner's request (fader works in REAPER per owner; it just needed more level). Edited processor range, fader tick marks and docs; 8/8 CTest on macOS. Release was cancelled (nothing tagged or published); PR #17 (CI builds only on merge) is open and separate. Release 0.3.0 still pending owner go-ahead. The AGENTS.md token check has no accessible API here and was not performed.

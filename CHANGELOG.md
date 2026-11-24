@@ -4,7 +4,9 @@
 
 - `windows-build.yml` now runs only on pushes to `main` (i.e. after a PR is merged) and on manual dispatch, no longer on pull requests. Validate branches by building locally or dispatching the workflow manually.
 
-## Unreleased — output level fader
+## 0.3.0 — output level fader (Windows VST3)
+
+- Released 2026-11-24. Windows x64 VST3 package built by `release-package.yml` from tag `v0.3.0`. Owner confirmed the fader works in REAPER; a DAW check on Windows of the +18 dB range is still outstanding.
 
 - New host parameter `outGain` (Output Level, -24 to +18 dB, default 0 dB; raised from the first +12 dB design for more makeup gain) with a horizontal fader strip at the bottom of the editor (double-click resets to 0 dB). Applied as a smoothed (25 ms) gain after the dry/wet sum, so output meters read post-gain. At the 0 dB default the audio is unchanged. It is not part of factory presets, so loading a preset leaves the level alone and it does not trigger MODIFIED. Existing projects without the parameter load at 0 dB. Editor minimum height is now 460 px (was 420). Verified by macOS build, 8/8 CTest and a standalone screenshot (`screenshots/ui-output-fader.png`); not yet checked in a DAW. The portable text codec (`StateCodec`) is unchanged.
 
