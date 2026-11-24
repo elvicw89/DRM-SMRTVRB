@@ -58,6 +58,7 @@ private:
     drmspace::TempoSync tempoSync;
     drmspace::TapTempo tapTempo;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> tailSmoother;
+    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> outputGainSmoother;
     std::array<std::vector<float>, 2> wetBuffer;
     std::array<std::atomic<float>, 2> inputPeakValue {};
     std::array<std::atomic<float>, 2> outputPeakValue {};

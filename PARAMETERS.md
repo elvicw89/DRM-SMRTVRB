@@ -19,6 +19,7 @@ The JUCE wrapper now exposes the host parameters below. IDs are the stable ident
 | `advWidth` | Advanced Width | 0–2 | 1 |
 | `advMix` | Advanced Mix | 0–1 | 1 |
 | `advTail` | Advanced Tail | 0.08–8 s | 1.2 |
+| `outGain` | Output Level | -24–+12 dB | 0 |
 
 The wrapper uses JUCE APVTS parameter state and XML host serialization. Host tempo is read-only and not a parameter. Tap BPM is editable in Tap mode. The TAP button updates the BPM parameter from tap intervals. The portable versioned text codec remains separate from host serialization.
 

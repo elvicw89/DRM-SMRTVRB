@@ -1,5 +1,9 @@
 # Agent Handover
 
+## Output level fader (Claude Sonnet 5.5)
+
+Branch `feature/output-gain-fader`: new `outGain` parameter (-24..+12 dB, default 0) plus a bottom fader strip in the editor; docs updated. macOS build + 8/8 CTest + standalone screenshot done; Windows package built via dispatch for owner testing. Not done: DAW check of the fader, release/version bump (owner decision). Continue on this branch; do not create a new one. Note: the AGENTS.md token/usage check has no accessible API in this environment and was not performed.
+
 ## Vintage UI redesign (Claude Sonnet 5.5)
 
 Branch `feature/vintage-ui-redesign`. Only `Source/PluginEditor.{h,cpp}` changed (plus docs/screenshots). macOS build + 8/8 CTest + standalone screenshots (`screenshots/ui-makeover-*.png`) done. Not done: Windows CI result, REAPER check of the new UI, tag/release (ask owner; a new version is needed). Mix knob engages `advMixOn` on user change (see CHANGELOG).

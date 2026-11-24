@@ -83,6 +83,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout DRMsmrtvrbAudioProcessor::cr
     p.emplace_back(floatParameter("advMix", "Advanced Mix", 0.0f, 1.0f, 1.0f, "%", 0, 100.0f));
     p.push_back(boolParameter("advTailOn", "Advanced Tail Enabled"));
     p.emplace_back(floatParameter("advTail", "Advanced Tail", 0.08f, 8.0f, 1.2f, "s", 2));
+    p.emplace_back(floatParameter("outGain", "Output Level", -24.0f, 12.0f, 0.0f, "dB", 1));
     return { p.begin(), p.end() };
 }
 
@@ -118,6 +119,8 @@ void DRMsmrtvrbAudioProcessor::prepareToPlay(double sampleRate, int blockSize)
     tailSmoother.reset(sampleRate, 0.025);
     tailSmoother.setCurrentAndTargetValue(read("advTail"));
     tailSmootherTarget = read("advTail");
+    outputGainSmoother.reset(sampleRate, 0.025);
+    outputGainSmoother.setCurrentAndTargetValue(juce::Decibels::decibelsToGain(read("outGain"), -100.0f));
     tempoSync.reset();
     tapTempo.reset();
 }
@@ -194,6 +197,8 @@ void DRMsmrtvrbAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
     std::array<float, 2> outputPeaks {};
     constexpr int maximumQuantum = 32;
     std::array<AdvancedResult, maximumQuantum> controlBuffer {};
+    std::array<float, maximumQuantum> gainBuffer {};
+    outputGainSmoother.setTargetValue(juce::Decibels::decibelsToGain(read("outGain"), -100.0f));
     auto historyWrite = activityWriteCount.load(std::memory_order_relaxed);
     for (int offset = 0; offset < samples;)
     {
@@ -209,6 +214,7 @@ void DRMsmrtvrbAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
                 result.reverb.gateSeconds = timing.gateSeconds;
             }
             controlBuffer[static_cast<std::size_t>(i)] = result;
+            gainBuffer[static_cast<std::size_t>(i)] = outputGainSmoother.getNextValue();
         }
         reverb.setParameters(controlBuffer[0].reverb);
         const float* inputPointers[2] {};
@@ -227,7 +233,7 @@ void DRMsmrtvrbAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
                 const float wet = wetBuffer[static_cast<std::size_t>(channel)][static_cast<std::size_t>(i)];
                 inputPeaks[static_cast<std::size_t>(channel)] = std::max(inputPeaks[static_cast<std::size_t>(channel)], std::abs(dry));
                 const auto& controls = controlBuffer[static_cast<std::size_t>(i)];
-                output[i] = dry * controls.dryGain + wet * controls.wetGain;
+                output[i] = (dry * controls.dryGain + wet * controls.wetGain) * gainBuffer[static_cast<std::size_t>(i)];
                 outputPeaks[static_cast<std::size_t>(channel)] = std::max(outputPeaks[static_cast<std::size_t>(channel)], std::abs(output[i]));
                 quantumActivity = std::max(quantumActivity, std::abs(wet));
             }

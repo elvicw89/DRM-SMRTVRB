@@ -172,6 +172,50 @@ void DRMLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int width
     g.fillPath(pointer, transform);
 }
 
+// Horizontal metal-cap fader in a recessed slot, with 0 dB tick marks.
+void DRMLookAndFeel::drawLinearSlider(juce::Graphics& g, int x, int y, int width, int height, float sliderPos,
+                                      float, float, juce::Slider::SliderStyle, juce::Slider& slider)
+{
+    const float alpha = slider.isEnabled() ? 1.0f : 0.45f;
+    const float cy = static_cast<float>(y) + static_cast<float>(height) * 0.5f;
+    const float left = static_cast<float>(x) + 8.0f, right = static_cast<float>(x + width) - 8.0f;
+    const auto slot = juce::Rectangle<float>(left, cy - 3.5f, right - left, 7.0f);
+
+    g.setColour(juce::Colours::black.withAlpha(0.9f));
+    g.fillRoundedRectangle(slot.expanded(1.5f), 4.0f);
+    g.setGradientFill(juce::ColourGradient(juce::Colour(0xff050606), 0.0f, slot.getY(),
+                                           juce::Colour(0xff1b1d1e), 0.0f, slot.getBottom(), false));
+    g.fillRoundedRectangle(slot, 3.0f);
+
+    const double range = slider.getMaximum() - slider.getMinimum();
+    for (double mark : { -24.0, -12.0, 0.0, 6.0, 12.0 })
+    {
+        const float tx = left + static_cast<float>((mark - slider.getMinimum()) / range) * (right - left);
+        g.setColour((mark == 0.0 ? ivory : muted).withAlpha(0.7f * alpha));
+        g.drawVerticalLine(juce::roundToInt(tx), cy + 7.0f, cy + (mark == 0.0 ? 13.0f : 11.0f));
+    }
+
+    const float fill = juce::jlimit(left, right, sliderPos);
+    g.setColour(amber.withAlpha(0.85f * alpha));
+    g.fillRoundedRectangle(juce::Rectangle<float>(left, cy - 2.0f, fill - left, 4.0f), 2.0f);
+
+    const auto cap = juce::Rectangle<float>(14.0f, 24.0f).withCentre({ fill, cy });
+    if (slider.hasKeyboardFocus(true) || slider.isMouseOverOrDragging())
+    {
+        g.setColour(amber.withAlpha(0.3f * alpha));
+        g.fillRoundedRectangle(cap.expanded(4.0f), 5.0f);
+    }
+    g.setColour(juce::Colours::black.withAlpha(0.8f));
+    g.fillRoundedRectangle(cap.expanded(1.0f), 3.0f);
+    g.setGradientFill(juce::ColourGradient(juce::Colour(0xffb9bdbf).withAlpha(alpha), cap.getX(), 0.0f,
+                                           juce::Colour(0xff595d60).withAlpha(alpha), cap.getRight(), 0.0f, false));
+    g.fillRoundedRectangle(cap, 2.5f);
+    g.setColour(juce::Colours::black.withAlpha(0.75f));
+    g.drawVerticalLine(juce::roundToInt(cap.getCentreX()), cap.getY() + 3.0f, cap.getBottom() - 3.0f);
+    g.setColour(juce::Colours::white.withAlpha(0.35f));
+    g.drawVerticalLine(juce::roundToInt(cap.getCentreX()) + 1, cap.getY() + 3.0f, cap.getBottom() - 3.0f);
+}
+
 juce::Label* DRMLookAndFeel::createSliderTextBox(juce::Slider& slider)
 {
     auto* label = juce::LookAndFeel_V4::createSliderTextBox(slider);
@@ -270,7 +314,7 @@ DRMsmrtvrbAudioProcessorEditor::DRMsmrtvrbAudioProcessorEditor(DRMsmrtvrbAudioPr
 {
     setLookAndFeel(&lookAndFeel);
     setResizable(true, true);
-    setResizeLimits(640, 420, 1040, 700);
+    setResizeLimits(640, 460, 1040, 740);
 
     for (auto* combo : { &preset, &target, &character, &sync, &division })
         addAndMakeVisible(*combo);
@@ -311,6 +355,14 @@ DRMsmrtvrbAudioProcessorEditor::DRMsmrtvrbAudioProcessorEditor(DRMsmrtvrbAudioPr
     mix.setTextValueSuffix(" %");
     tail.setTextValueSuffix(" s");
 
+    outLevel.setTitle("Output level");
+    outLevel.setWantsKeyboardFocus(true);
+    outLevel.setSliderStyle(juce::Slider::LinearHorizontal);
+    outLevel.setTextBoxStyle(juce::Slider::TextBoxRight, false, 72, 20);
+    outLevel.setTextValueSuffix(" dB");
+    outLevel.setDoubleClickReturnValue(true, 0.0);
+    addAndMakeVisible(outLevel);
+
     std::array<juce::ToggleButton*, 4> toggles { &preDelayOn, &toneOn, &widthOn, &tailOn };
     for (auto* toggle : toggles)
     {
@@ -335,6 +387,8 @@ DRMsmrtvrbAudioProcessorEditor::DRMsmrtvrbAudioProcessorEditor(DRMsmrtvrbAudioPr
     addLabel(divisionLabel, "DIVISION");
     addLabel(decayLabel, "REVERB TIME");
     addLabel(mixLabel, "MIX");
+    addLabel(outLevelLabel, "OUTPUT LEVEL");
+    outLevelLabel.setColour(juce::Label::textColourId, ivory);
     for (auto* label : { &spaceLabel, &bpmLabel, &decayLabel, &mixLabel })
         label->setJustificationType(juce::Justification::centred);
     spaceLabel.setColour(juce::Label::textColourId, amber);
@@ -360,6 +414,7 @@ DRMsmrtvrbAudioProcessorEditor::DRMsmrtvrbAudioProcessorEditor(DRMsmrtvrbAudioPr
     buttonAttachments[1] = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(state, "advToneOn", toneOn);
     buttonAttachments[2] = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(state, "advWidthOn", widthOn);
     buttonAttachments[3] = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(state, "advTailOn", tailOn);
+    outLevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(state, "outGain", outLevel);
     tailAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(state, "advTail", tail);
 
     // Moving the Mix knob engages the existing override; a double-click restores both defaults.
@@ -376,7 +431,7 @@ DRMsmrtvrbAudioProcessorEditor::DRMsmrtvrbAudioProcessorEditor(DRMsmrtvrbAudioPr
     mix.onValueChange = [this, setMixEnabled] { if (mix.isUserChange()) setMixEnabled(true); };
     mix.onDisengage = [setMixEnabled] { setMixEnabled(false); };
 
-    setSize(760, 500);
+    setSize(760, 540);
     startTimerHz(24);
 }
 
@@ -436,6 +491,15 @@ void DRMsmrtvrbAudioProcessorEditor::renderBackdrop()
     drawPanel(g, spacePanel, "SPACE");
     drawPanel(g, outputPanel, "OUTPUT");
     drawPanel(g, advancedPanel, "ADVANCED PROFILE TRIMS");
+    {
+        const auto r = levelPanel.toFloat();
+        g.setColour(juce::Colours::black.withAlpha(0.55f));
+        g.fillRoundedRectangle(r.expanded(2.0f), 6.0f);
+        drawBrushed(g, r.reduced(1.0f), juce::Colour(0xff202224), juce::Colour(0xff141516), 0.06f);
+        g.setColour(juce::Colour(0xff7a7f82).withAlpha(0.8f));
+        g.drawRoundedRectangle(r.expanded(1.0f), 6.0f, 1.2f);
+        drawBevel(g, r, 5.0f, false);
+    }
 }
 
 void DRMsmrtvrbAudioProcessorEditor::paint(juce::Graphics& g)
@@ -528,6 +592,8 @@ void DRMsmrtvrbAudioProcessorEditor::resized()
     preset.setBounds(presetArea.removeFromTop(30).withTrimmedTop(2));
 
     content.removeFromTop(10);
+    levelPanel = content.removeFromBottom(40);
+    content.removeFromBottom(8);
     advancedPanel = content.removeFromBottom(juce::jlimit(132, 190, content.getHeight() * 38 / 100));
     content.removeFromBottom(8);
     sourcePanel = content.removeFromLeft(content.getWidth() * 40 / 100);
@@ -535,6 +601,13 @@ void DRMsmrtvrbAudioProcessorEditor::resized()
     outputPanel = content.removeFromRight(content.getWidth() * 38 / 100);
     content.removeFromRight(8);
     spacePanel = content;
+
+    // Output level fader strip across the bottom.
+    {
+        auto strip = levelPanel.reduced(14, 6);
+        outLevelLabel.setBounds(strip.removeFromLeft(100));
+        outLevel.setBounds(strip);
+    }
 
     // Source / tempo panel.
     {

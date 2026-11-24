@@ -24,6 +24,7 @@ Phase 6 design with an initial JUCE editor implementation in `Source/PluginEdito
 | Main | Large SPACE rotary, numeric percent readout | Dominant control; 0% is exact dry, 100% reaches the profile's intended maximum. Drag, mouse wheel, keyboard arrows, and double-click default are supported. |
 | Timing | Free / Host / Tap, BPM readout, division selector, tap button | Host mode displays host tempo or the documented fallback; Tap measures taps; divisions are enabled only when relevant. Gated tail timing follows the selected division and the engine's safe maximum. |
 | Advanced | Pre-delay, Tone, Width, Mix, Tail; each with enable/bypass | Values edit only when enabled. Disabled values remain stored. Engine/profile constraints are shown in the value range and respected by DSP. |
+| Output level | Horizontal fader strip at the bottom, -24 to +12 dB, double-click resets to 0 dB | Parameter `outGain`; post dry/wet gain, not stored in factory presets. |
 | Meter strip | Input and output peak meters | Show stereo channels independently, with peak hold and decay; meter handoff must be lock-free and safe for the audio callback. |
 | Reverb activity | Compact envelope/history display | Visualize the recent wet output envelope from audio-thread data; provide a static reduced-motion fallback and no audio-thread drawing or allocation. |
 

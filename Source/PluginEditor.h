@@ -57,6 +57,8 @@ public:
     DRMLookAndFeel();
     void drawRotarySlider(juce::Graphics&, int x, int y, int width, int height, float sliderPos,
                           float startAngle, float endAngle, juce::Slider&) override;
+    void drawLinearSlider(juce::Graphics&, int x, int y, int width, int height, float sliderPos,
+                          float minSliderPos, float maxSliderPos, juce::Slider::SliderStyle, juce::Slider&) override;
     juce::Label* createSliderTextBox(juce::Slider&) override;
     void drawToggleButton(juce::Graphics&, juce::ToggleButton&, bool highlighted, bool down) override;
     void drawButtonBackground(juce::Graphics&, juce::Button&, const juce::Colour&, bool highlighted, bool down) override;
@@ -86,16 +88,17 @@ private:
     DRMLookAndFeel lookAndFeel;
     juce::ComboBox preset, target, character, sync, division;
     juce::TextButton tapButton { "TAP" };
-    DRMFocusableSlider space, bpm, freeDecay, preDelay, tone, width, tail;
+    DRMFocusableSlider space, bpm, freeDecay, preDelay, tone, width, tail, outLevel;
     DRMMixSlider mix;
     juce::ToggleButton preDelayOn { "Pre-delay" }, toneOn { "Tone" }, widthOn { "Width" }, tailOn { "Tail" };
-    juce::Label title, brand, spaceLabel, bpmLabel, syncLabel, decayLabel, mixLabel;
+    juce::Label title, brand, spaceLabel, bpmLabel, syncLabel, decayLabel, mixLabel, outLevelLabel;
     juce::Label targetLabel, characterLabel, presetLabel, presetStatus, divisionLabel;
     std::array<std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment>, 4> comboAttachments;
     std::array<std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>, 7> sliderAttachments;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> outLevelAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> tailAttachment;
     std::array<std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment>, 4> buttonAttachments;
-    juce::Rectangle<int> headerPlate, statusBox, sourcePanel, spacePanel, outputPanel, advancedPanel, meterBox, envelopeBox;
+    juce::Rectangle<int> headerPlate, statusBox, sourcePanel, spacePanel, outputPanel, advancedPanel, levelPanel, meterBox, envelopeBox;
     juce::Image backdrop;
     bool presetModified = false;
     std::array<float, 4> meterLevels {};
